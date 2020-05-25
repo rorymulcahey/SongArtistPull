@@ -1,0 +1,185 @@
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
+cid = '' # enter account info
+secret = '' # enter account info
+# method used from https://spotipy.readthedocs.io/en/latest/#
+
+
+'''
+Input: Album search result from Spotify.
+Output: Print to screen the artist.
+'''
+
+
+def artistpullfromalbum(items):
+    albums = items
+    if len(items) > 0:
+        albums = items[0]  # grabs first search result when indexed to [0]
+    print(albums['name'])
+    print(albums['artists'][0]['name'])
+
+
+'''
+Input: Track search result from Spotify.
+Output: Print to screen the artist.
+'''
+
+
+def artistpullfromtrack(items):
+    i = 0
+    while True:
+        try:
+            items[i]
+        except IndexError:
+            quitapp = input("End of list reached. Restart? (Y/N) ")
+            if quitapp.lower() == 'n':
+                return
+            i = 0
+        print("Artist name search result is: " + items[i]['artists'][0]['name'])
+        print("Song name search result is: " + items[i]['name'])
+        answer = input("Is this correct? (Y/N) ")
+        if answer.lower() == 'y':
+            tracks = items[i]
+            break
+        i += 1
+    print(tracks['name'])
+    print(tracks['artists'][0]['name'])
+
+
+'''
+Input: Track search result from Spotify.
+Output: Print to screen the album.
+'''
+
+
+def albumpullfromtrack(items):
+    i = 0
+    while True:
+        try:
+            items[i]
+        except IndexError:
+            quitapp = input("End of list reached. Restart? (Y/N) ")
+            if quitapp.lower() == 'n':
+                return
+            i = 0
+        print("Album name search result is: " + items[i]['album']['name'])
+        print("Song name search result is: " + items[i]['name'])
+        answer = input("Is this correct? (Y/N) ")
+        if answer.lower() == 'y':
+            tracks = items[i]
+            break
+        i += 1
+    print(tracks['name'])
+    print(tracks['album']['name'])
+
+
+'''
+Input: Artist search result from Spotify.
+Output: Print to screen all albums from the artist.
+'''
+
+
+def albumpullfromartist(items):
+    artist = items
+    if len(items) > 0:
+        artist = items[0]  # grabs first search result when indexed to [0]
+    print(artist['name'])
+    numOfAlbums = len(spotify.artist_albums(artist['uri'])['items'])  # number of albums
+    for i in range(numOfAlbums):  # numofalbums for length
+        print("album " + str(i + 1) + "/" + str(numOfAlbums) + ": " +
+              spotify.artist_albums(artist['uri'])['items'][i]['name'])  # grabs albums[0..i]
+
+
+'''
+Input: Album search result from Spotify.
+Output: Print to screen all songs inside the album.
+'''
+
+
+def trackpullfromalbum(items):
+    albumid = items
+    if len(items) > 0:
+        albumid = items[0]['id']  # grabs first search result when indexed to [0]
+        print(spotify.album(albumid)['name'])
+    for j in range(len(spotify.album_tracks(albumid)['items'])):
+        tracks = spotify.album_tracks(albumid)['items'][j]['name']  # grabs tracks[0..i] from album
+        print("song " + str(j + 1) + ": " + tracks)  # grabs album's tracks
+
+
+'''
+Input: Artist search result from Spotify.
+Output: Print to screen all albums and songs inside the album.
+'''
+
+
+def trackpullfromartist(items):
+    artist = items
+    if len(items) > 0:
+        artist = items[0]  # grabs first search result when indexed to [0]
+    # print("artist uri: " + artist['uri'])  # artist unique key
+    print(artist['name'])
+    numOfAlbums = len(spotify.artist_albums(artist['uri'])['items'])  # number of albums
+    for i in range(numOfAlbums):  # numofalbums for length
+        print("album " + str(i + 1) + "/" + str(numOfAlbums) + ": " +
+              spotify.artist_albums(artist['uri'])['items'][i]['name'])  # grabs albums[0..i]
+        albumid = spotify.artist_albums(artist['uri'])['items'][i]['uri']  # grabs albums uri
+        # print("album uri: " + albumid)  # album unique key
+        for j in range(len(spotify.album_tracks(albumid)['items'])):
+            tracks = spotify.album_tracks(albumid)['items'][j]['name']  # grabs tracks[0..i] from album
+            print("song " + str(j + 1) + ": " + tracks)  # grabs album's tracks
+
+
+if __name__ == '__main__':
+    spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(
+        client_id=cid, client_secret=secret))
+    artistname = 'The Killers'
+    albumname = 'Hot Fuss'
+    trackname = 'Somebody Told Me'
+
+    # switch statement based on user input
+    while True:
+        searchcategory = input("Enter type of search category: (A)rtist? A(l)bum? or (T)rack? ")
+        searchcategory = searchcategory.lower()
+        if searchcategory == 'a':
+            artistname = input("Artist name? ")
+            fromartist = spotify.search(q='artist:' + artistname, type='artist')
+            break
+        elif searchcategory == 'l':
+            albumname = input("Album name? ")
+            fromalbum = spotify.search(q='album:' + albumname, type='album')
+            break
+        elif searchcategory == 't':
+            trackname = input("Track name? ")
+            fromtrack = spotify.search(q='track:' + trackname, type='track')
+            break
+        else:
+            print("Enter an A, L or T")
+
+    # switch statement based on user input
+    while True:
+        resultcategory = input("Enter type of result category: (A)rtist? A(l)bum? or (T)rack? ")
+        resultcategory = resultcategory.lower()
+        if resultcategory == searchcategory:
+            print("Result category cannot match search category ")
+            print("Enter an A, L or T ")
+            continue
+        if resultcategory == 'a':
+            if searchcategory == 't':
+                artistpullfromtrack(fromtrack['tracks']['items'])
+            if searchcategory == 'l':
+                artistpullfromalbum(fromalbum['albums']['items'])
+            break
+        if resultcategory.lower() == 'l':
+            if searchcategory == 'a':
+                albumpullfromartist(fromartist['artists']['items'])
+            if searchcategory == 't':
+                albumpullfromtrack(fromtrack['tracks']['items'])
+            break
+        if resultcategory.lower() == 't':
+            if searchcategory == 'l':
+                trackpullfromalbum(fromalbum['albums']['items'])
+            if searchcategory == 'a':
+                trackpullfromartist(fromartist['artists']['items'])
+            break
+        print("Enter an A, L or T")
+
